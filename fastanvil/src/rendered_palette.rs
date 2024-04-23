@@ -13,6 +13,7 @@ pub struct RenderedPalette {
     pub blockstates: std::collections::HashMap<String, Rgba>,
     pub grass: image::RgbaImage,
     pub foliage: image::RgbaImage,
+    pub missing_colour: [u8; 4],
 }
 
 impl RenderedPalette {
@@ -63,8 +64,6 @@ impl RenderedPalette {
 
 impl Palette for RenderedPalette {
     fn pick(&self, block: &Block, biome: Option<Biome>) -> Rgba {
-        let missing_colour = [255, 0, 255, 255];
-
         // A bunch of blocks in the game seem to be special cased outside of the
         // blockstate/model mechanism. For example leaves get coloured based on
         // the tree type and the biome type, but this is not encoded in the
@@ -125,7 +124,7 @@ impl Palette for RenderedPalette {
             Some(c) => *c,
             None => {
                 debug!("could not draw {}", block.encoded_description());
-                missing_colour
+                self.missing_colour
             }
         }
     }
@@ -202,5 +201,6 @@ pub fn load_rendered_palette(
         blockstates: blockstates?,
         grass: grass?,
         foliage: foliage?,
+        missing_colour: [255, 0, 255, 255],
     })
 }
