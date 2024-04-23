@@ -112,7 +112,7 @@ fn get_palette(path: Option<&str>, missing_colour: [u8; 4]) -> Result<RenderedPa
         blockstates: blockstates?,
         grass: grass?,
         foliage: foliage?,
-        missing_colour: missing_colour,
+        missing_colour,
     };
 
     Ok(p)
