@@ -381,7 +381,9 @@ fn main() -> Result<()> {
                         .long("renderer")
                         .takes_value(true)
                         .required(false)
-                        .default_value("top_shade"),
+                        .possible_values(&["top_shade", "DEM"])
+                        .default_value("top_shade")
+                        .help("The renderer to use for the tiles. `top_shade` is the default and uses the blockstate palette. `DEM` will generate a digital elevation model."),
                 )
                 .arg(
                     Arg::with_name("size")
