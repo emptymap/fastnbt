@@ -18,6 +18,15 @@ fn parse_coord(coord: &str) -> Option<(isize, isize)> {
     Some((x, z))
 }
 
+fn parse_colour(colour: &str) -> Option<[u8; 4]> {
+    let mut s = colour.split(',');
+    let r: u8 = s.next()?.parse().ok()?;
+    let g: u8 = s.next()?.parse().ok()?;
+    let b: u8 = s.next()?.parse().ok()?;
+    let a: u8 = s.next()?.parse().ok()?;
+    Some([r, g, b, a])
+}
+
 fn auto_size(coords: &[(RCoord, RCoord)]) -> Option<Rectangle> {
     if coords.is_empty() {
         return None;
@@ -57,7 +66,7 @@ struct Rectangle {
     zmax: RCoord,
 }
 
-fn get_palette(path: Option<&str>) -> Result<RenderedPalette> {
+fn get_palette(path: Option<&str>, missing_colour: [u8; 4]) -> Result<RenderedPalette> {
     let path = match path {
         Some(path) => Path::new(path),
         None => panic!("no palette"),
@@ -103,6 +112,7 @@ fn get_palette(path: Option<&str>) -> Result<RenderedPalette> {
         blockstates: blockstates?,
         grass: grass?,
         foliage: foliage?,
+        missing_colour,
     };
 
     Ok(p)
@@ -141,7 +151,11 @@ fn render(args: &ArgMatches) -> Result<()> {
 
     let region_len: usize = 32 * 16;
 
-    let pal = get_palette(args.value_of("palette"))?;
+    let missing_colour = match parse_colour(args.value_of("missing-colour").unwrap()) {
+        Some(colour) => colour,
+        None => panic!("invalid missing colour, please use format \"r,g,b,a\""),
+    };
+    let pal = get_palette(args.value_of("palette"), missing_colour)?;
 
     let region_maps: Vec<_> = coords
         .into_par_iter()
@@ -242,7 +256,11 @@ fn tiles(args: &ArgMatches) -> Result<()> {
 
     let region_len: usize = 32 * 16;
 
-    let pal = get_palette(args.value_of("palette"))?;
+    let missing_colour = match parse_colour(args.value_of("missing-colour").unwrap()) {
+        Some(colour) => colour,
+        None => panic!("invalid missing colour, please use format \"r,g,b,a\""),
+    };
+    let pal = get_palette(args.value_of("palette"), missing_colour)?;
 
     let regions_processed = coords
         .into_par_iter()
@@ -383,6 +401,14 @@ fn main() -> Result<()> {
                         .long("palette")
                         .takes_value(true)
                         .required(false),
+                )
+                .arg(
+                    Arg::with_name("missing-colour")
+                        .long("missing-colour")
+                        .takes_value(true)
+                        .required(false)
+                        .help("Use the given color for missing blocks. If alpha is less than 255, move down until a non-missing block is found. Example: 0,0,0,0")
+                        .default_value("255,0,255,255"),
                 )
                 .arg(
                     Arg::with_name("calculate-heights")
