@@ -1,4 +1,4 @@
-use crate::{Chunk, HeightMode, JavaChunk, Renderer, TopShadeRenderer};
+use crate::{Chunk, DEMRenderer, HeightMode, JavaChunk, Renderer, TopShadeRenderer};
 
 use super::HashPalette;
 
@@ -12,6 +12,9 @@ const CHUNK_FORGE_1_20_1: &[u8] = include_bytes!("../../resources/forge-1.20.1.n
 
 fn exercise_render(chunk: &dyn Chunk) -> [[u8; 4]; 256] {
     let palette = HashPalette;
+
+    let renderer = DEMRenderer::new(HeightMode::Trust);
+    renderer.render(chunk, None);
 
     let renderer = TopShadeRenderer::new(&palette, HeightMode::Trust);
     renderer.render(chunk, None);
